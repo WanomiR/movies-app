@@ -1,11 +1,10 @@
 package main
 
 import (
-	"backend/internal/models"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"time"
 )
 
 func (s *WebServer) Home(w http.ResponseWriter, r *http.Request) {
@@ -29,38 +28,16 @@ func (s *WebServer) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *WebServer) AllMovies(w http.ResponseWriter, r *http.Request) {
-	var movies []models.Movie
-
-	rd, _ := time.Parse("2006-01-02", "1986-03-07")
-	highlander := models.Movie{
-		ID:          1,
-		Title:       "Highlander",
-		ReleaseDate: rd,
-		MpaaRating:  "R",
-		Runtime:     116,
-		Description: "A lengthy description",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+	movies, err := s.DB.AllMovies()
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-
-	rd, _ = time.Parse("2006-01-02", "1981-06-12")
-	rotla := models.Movie{
-		ID:          2,
-		Title:       "Raiders of the Lost Arc",
-		ReleaseDate: rd,
-		MpaaRating:  "PG-13",
-		Runtime:     115,
-		Description: "A lengthy description",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
-
-	movies = append(movies, highlander, rotla)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
-	err := json.NewEncoder(w).Encode(movies)
+	err = json.NewEncoder(w).Encode(movies)
 	if err != nil {
 		log.Println(err)
 	}

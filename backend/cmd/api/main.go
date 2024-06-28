@@ -1,7 +1,8 @@
 package main
 
 import (
-	"database/sql"
+	"backend/internal/respository"
+	"backend/internal/respository/dbrepo"
 	"flag"
 	"github.com/joho/godotenv"
 	"log"
@@ -13,7 +14,7 @@ type WebServer struct {
 	Domain string
 	Port   string
 	DSN    string
-	DB     *sql.DB
+	DB     respository.DatabaseRepo
 }
 
 func main() {
@@ -38,8 +39,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
-	server.DB = conn
+
+	server.DB = &dbrepo.PostgresDBRepo{DB: conn}
+	defer server.DB.Connection().Close()
 
 	// start a web server
 	log.Println("server running on port", server.Port)
