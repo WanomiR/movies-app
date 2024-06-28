@@ -16,11 +16,11 @@ func main() {
 	// set application config
 	var server WebServer
 
+	// read environment variables
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("error loading .env file")
 	}
-
 	server.Port = os.Getenv("PORT")
 	server.Domain = os.Getenv("DOMAIN")
 
@@ -28,9 +28,7 @@ func main() {
 
 	// connect to the database
 
-	http.HandleFunc("/", Hello)
-
 	// start a web server
 	log.Println("server running on port", server.Port)
-	log.Fatal(http.ListenAndServe(":"+server.Port, nil))
+	log.Fatal(http.ListenAndServe(":"+server.Port, server.Routes()))
 }
