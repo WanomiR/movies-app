@@ -13,6 +13,7 @@ const router = createBrowserRouter([
 		children: [
 			{index: true, element: <cmp.Home/>},
 			{path: "/movies", element: <cmp.Movies/>,},
+			{path: "/movies/:id", element: <cmp.Movie/>,},
 			{path: "/genres", element: <cmp.Genres/>,},
 			{path: "/admin/movie/0", element: <cmp.EditMovie/>,},
 			{path: "/manage-catalogue", element: <cmp.ManageCatalogue/>,},
