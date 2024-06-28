@@ -8,7 +8,7 @@ const Movies = () => {
 		const fetchData = async () => {
 			const headers =  new Headers({ 'Content-Type': 'application/json' });
 			try {
-				const res = await fetch(`http://0.0.0.0:8888/movies`, {method: "GET", headers: headers})
+				const res = await fetch(`http://localhost:8888/movies`, {method: "GET", headers: headers})
 				const data = await res.json()
 				setMovies(data)
 			} catch (err) {

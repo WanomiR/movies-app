@@ -9,22 +9,41 @@ const Login = () => {
 
 	const navigate = useNavigate()
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault()
-		console.log("email/pass", credentials.email, credentials.password)
 
-		if (credentials.email === "admin@example.com") {
-			setJwtToken("abc")
-			setAlertInfo({className: "d-none", message: ""})
-			navigate("/")
-		} else {
-			setAlertInfo({className: "alert-danger", message: "Invalid credentials"})
+		// build the request payload
+		let payload = {
+			email: credentials.email,
+			password: credentials.password,
+		}
+
+		const headers =  new Headers({ 'Content-Type': 'application/json' });
+		const requestOptions = {
+			method: "POST",
+			headers: headers,
+			credentials: "include",
+			body: JSON.stringify(payload),
+		}
+
+		try {
+			const res = await fetch(`http://localhost:8888/authenticate`, requestOptions)
+			const data = await res.json()
+			if (data.error) {
+				setAlertInfo({className: "alert-danger", message: data.message})
+			} else {
+				setJwtToken(data.access_token)
+				setAlertInfo({className: "d-none", message: ""})
+				navigate("/")
+			}
+		} catch (e) {
+			setAlertInfo({className: "alert-danger", message: e.message})
 		}
 	}
 
 	return (
 		<>
-			<div className={"col-md-6 offset-md-3"} >
+			<div className={"col-md-6 offset-md-3"}>
 				<h2>Login</h2>
 				<hr/>
 				<form onSubmit={handleSubmit}>

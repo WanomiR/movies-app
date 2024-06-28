@@ -14,6 +14,7 @@ func (s *WebServer) Routes() http.Handler {
 
 	mux.Get("/", s.Home)
 	mux.Get("/movies", s.AllMovies)
+	mux.Post("/authenticate", s.Authenticate)
 
 	return mux
 }
