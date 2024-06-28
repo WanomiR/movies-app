@@ -1,17 +1,71 @@
 import {Link, Outlet, useNavigate} from "react-router-dom";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Alert from "./components/Alert";
 
 const App = () => {
 	const [jwtToken, setJwtToken] = useState("");
 	const [alertInfo, setAlertInfo] = useState({className: "d-none", message: ""});
 
+	const [ticking, setTicking] = useState(false);
+	const [tickInterval, setTickInterval] = useState();
+
+	const toggleRefresh = () => {
+		console.log("clicked");
+
+		if (!ticking) {
+			console.log("turning on ticking")
+			let i = setInterval(() => {
+				console.log("this will run every second");
+			}, 1000)
+			setTickInterval(i)
+			console.log("setting tick interval to", i)
+			setTicking(true)
+		} else {
+			console.log("turning off ticking")
+			console.log("turning off tick interval", tickInterval)
+			setTickInterval(null)
+			setTicking(false)
+			clearInterval(tickInterval)
+		}
+	}
+
 	const navigate = useNavigate()
 
-	const logOut = () => {
+	const logOut = async () => {
+		const requestOptions = {
+			method: "GET",
+			credentials: "include",
+		}
+		try {
+			await fetch("http://localhost:8888/logout", requestOptions)
+		} catch (e) {
+			console.log("error logging out", e.message)
+		}
+
 		setJwtToken("")
 		navigate("/login")
 	}
+
+	useEffect( () => {
+		const fetchAccessToken = async () => {
+			if (jwtToken === "") {
+				const requestOptions = {
+					method: "GET",
+					credentials: "include",
+				}
+				try {
+					const res = await fetch(`http://localhost:8888/refresh`, requestOptions)
+					const data = await res.json()
+					if (data.access_token) {
+						setJwtToken(data.access_token)
+					}
+				} catch (e) {
+					console.log("user is not logged in", e.message)
+				}
+			}
+		}
+		fetchAccessToken()
+	}, [jwtToken]);
 
 	return (<div className="container">
 		<div className="row">
@@ -43,6 +97,7 @@ const App = () => {
 				</nav>
 			</div>
 			<div className="col-md-10">
+				<a href="#!" className={"btn btn-primary"} onClick={toggleRefresh}>Toggle Ticking</a>
 				<Alert message={alertInfo.message} className={alertInfo.className}/>
 				<Outlet context={{
 					jwtToken, setJwtToken, setAlertInfo,
