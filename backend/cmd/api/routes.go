@@ -13,6 +13,9 @@ func (s *WebServer) Routes() http.Handler {
 	mux.Use(s.enableCORS)
 
 	mux.Get("/", s.Home)
+
+	mux.Post("/authenticate", s.Authenticate)
+
 	mux.Get("/movies", s.AllMovies)
 
 	return mux

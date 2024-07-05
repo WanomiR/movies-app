@@ -26,8 +26,9 @@ func main() {
 		log.Fatal("error loading .env file")
 	}
 
-	// set application config
 	var server WebServer
+
+	// set application config
 	server.Port = os.Getenv("PORT")
 	server.Domain = os.Getenv("DOMAIN")
 

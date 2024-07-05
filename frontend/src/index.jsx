@@ -5,6 +5,8 @@ import App from './App'
 import './index.css'
 import * as cmp from './components/components.js'
 
+const apiBaseUrl = 'http://localhost:8888'
+
 const router = createBrowserRouter([
 	{
 		path: '/',
@@ -28,3 +30,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 		<RouterProvider router={router}/>
 	</React.StrictMode>,
 )
+
+export default apiBaseUrl

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/golang-jwt/jwt/v5"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -17,7 +18,7 @@ type Auth struct {
 	CookieName    string
 }
 
-type jwtUser struct {
+type JwtUser struct {
 	ID        int    `json:"id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
@@ -32,7 +33,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (j *Auth) GenerateTokenPair(user *jwtUser) (TokenPairs, error) {
+func (j *Auth) GenerateTokenPair(user *JwtUser) (TokenPairs, error) {
 	// Create a token
 	token := jwt.New(jwt.SigningMethodHS256)
 
@@ -77,4 +78,32 @@ func (j *Auth) GenerateTokenPair(user *jwtUser) (TokenPairs, error) {
 
 	// Return token pairs
 	return tokenPairs, nil
+}
+
+func (j *Auth) GetRefreshCookie(refreshToken string) *http.Cookie {
+	return &http.Cookie{
+		Name:     j.CookieName,
+		Path:     j.CookiePath,
+		Value:    refreshToken,
+		Expires:  time.Now().UTC().Add(j.TokenExpiry),
+		MaxAge:   int(j.TokenExpiry.Seconds()),
+		SameSite: http.SameSiteStrictMode,
+		Domain:   j.CookieDomain,
+		HttpOnly: true,
+		Secure:   true,
+	}
+}
+
+func (j *Auth) GetExpiredRefreshCookie() *http.Cookie {
+	return &http.Cookie{
+		Name:     j.CookieName,
+		Path:     j.CookiePath,
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+		SameSite: http.SameSiteStrictMode,
+		Domain:   j.CookieDomain,
+		HttpOnly: true,
+		Secure:   true,
+	}
 }

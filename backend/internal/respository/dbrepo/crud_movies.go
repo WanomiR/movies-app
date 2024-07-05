@@ -3,16 +3,10 @@ package dbrepo
 import (
 	"backend/internal/models"
 	"context"
-	"database/sql"
-	"time"
 )
 
-type PostgresDBRepo struct {
-	DB *sql.DB
-}
-
 func (db *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	query := `SELECT id, title, release_date, runtime, mpaa_rating, description, coalesce(image, ''), created_at, updated_at FROM movies`
@@ -46,8 +40,4 @@ func (db *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
 	}
 
 	return movies, nil
-}
-
-func (db *PostgresDBRepo) Connection() *sql.DB {
-	return db.DB
 }

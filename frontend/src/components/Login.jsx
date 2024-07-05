@@ -1,6 +1,7 @@
 import Input from "./form/Input.jsx";
 import {useState} from "react";
 import {useNavigate, useOutletContext} from "react-router-dom";
+import apiBaseUrl from "/src/index.jsx";
 
 const Login = () => {
 
@@ -9,17 +10,37 @@ const Login = () => {
 
 	const navigate = useNavigate()
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async e => {
 		e.preventDefault()
-		console.log("email/pass", credentials.email, credentials.password)
 
-		if (credentials.email === "admin@example.com") {
-			setJwtToken("abc")
-			setAlertInfo({className: "d-none", message: ""})
-			navigate("/")
-		} else {
-			setAlertInfo({className: "alert-danger", message: "Invalid credentials"})
+		// build request payload
+		let payload = {
+			email: credentials.email,
+			password: credentials.password,
 		}
+
+		const requestOptions = {
+			method: "POST",
+			headers: {'Content-Type': 'application/json'},
+			credentials: "include",
+			body: JSON.stringify(payload),
+		}
+
+		try {
+			const res = await fetch(apiBaseUrl + `/authenticate`, requestOptions)
+			const data = await res.json()
+			if (data.error) {
+				setAlertInfo({message: data.message, className: "alert-danger"})
+			} else {
+				setJwtToken(data.access_token)
+				setAlertInfo({message: "", className: "d-none"})
+				navigate("/")
+			}
+
+		} catch (error) {
+			setAlertInfo({message: error.message, className: "alert-danger"})
+		}
+
 	}
 
 	return (
@@ -42,7 +63,7 @@ const Login = () => {
 						type="password"
 						className={"form-control"}
 						name={"password"}
-						placeholder={"verysecret"}
+						placeholder={"secret"}
 						autoComplete="password-new"
 						onChange={(e) => setCredentials({...credentials, password: e.target.value})}
 					/>

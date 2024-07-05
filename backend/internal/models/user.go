@@ -11,9 +11,14 @@ type User struct {
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Password  string    `json:"password"` // internally stored as hash
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
+}
+
+type UserAuthPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (u *User) PasswordMatches(plainText string) (bool, error) {
