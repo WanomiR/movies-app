@@ -40,7 +40,6 @@ const Login = () => {
 		} catch (error) {
 			setAlertInfo({message: error.message, className: "alert-danger"})
 		}
-
 	}
 
 	return (

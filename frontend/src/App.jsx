@@ -1,6 +1,7 @@
 import {Link, Outlet, useNavigate} from "react-router-dom";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Alert from "./components/Alert";
+import apiBaseUrl from "/src/index.jsx";
 
 const App = () => {
 	const [jwtToken, setJwtToken] = useState("");
@@ -8,10 +9,45 @@ const App = () => {
 
 	const navigate = useNavigate()
 
-	const logOut = () => {
+	const logOut = async () => {
+		const requestOptions = {
+			method: "GET",
+			credentials: "include"
+		}
+
+		try {
+			await fetch(apiBaseUrl + `/logout`, requestOptions)
+		} catch (error) {
+			console.log("error logging out", error.message)
+		}
+
 		setJwtToken("")
 		navigate("/login")
+
 	}
+
+	useEffect(() => {
+		const doRefresh = async () => {
+			if (jwtToken === "") {
+				const requestOptions = {
+					method: "GET",
+					credentials: "include",
+				}
+				try {
+					const res = await fetch(apiBaseUrl + `/refresh`, requestOptions)
+					const data = await res.json()
+					if (data.access_token) {
+						setJwtToken(data.access_token)
+					} else {
+						console.log("no access token found", data.message)
+					}
+				} catch (error) {
+					console.log("user is not logged in", error.message)
+				}
+			}
+		}
+		doRefresh()
+	}, [jwtToken]);
 
 	return (<div className="container">
 		<div className="row">

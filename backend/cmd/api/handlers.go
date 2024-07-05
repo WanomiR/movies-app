@@ -4,8 +4,11 @@ import (
 	"backend/internal/models"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/golang-jwt/jwt/v5"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func (s *WebServer) Home(w http.ResponseWriter, r *http.Request) {
@@ -65,8 +68,7 @@ func (s *WebServer) Authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create a jwt user
-	jwtUser := JwtUser{
-		ID:        user.ID,
+	jwtUser := JwtUser{ID: user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 	}
@@ -82,4 +84,59 @@ func (s *WebServer) Authenticate(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, refreshCookie)
 
 	writeJSONResponse(w, http.StatusAccepted, tokens)
+}
+
+func (s *WebServer) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+	for _, cookie := range r.Cookies() {
+		fmt.Println(cookie.Name, s.Auth.CookieName)
+		if cookie.Name == s.Auth.CookieName {
+			claims := &Claims{}
+			refreshToken := cookie.Value
+
+			// parse the token to get the claims
+			_, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (any, error) {
+				return []byte(s.Auth.Secret), nil
+			})
+			if err != nil {
+				writeJSONError(w, errors.New("unauthorized"), http.StatusUnauthorized)
+				return
+			}
+
+			// get user id from the token claims
+			userId, err := strconv.Atoi(claims.Subject) // subject is user id
+			if err != nil {
+				writeJSONError(w, errors.New("unknown user"), http.StatusUnauthorized)
+				return
+			}
+
+			user, err := s.DB.GetUserById(userId)
+			if err != nil {
+				writeJSONError(w, errors.New("unknown user"), http.StatusUnauthorized)
+				return
+			}
+
+			jwtUser := JwtUser{
+				ID:        user.ID,
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
+			}
+
+			tokens, err := s.Auth.GenerateTokenPair(&jwtUser)
+			if err != nil {
+				writeJSONError(w, errors.New("error generating tokens"), http.StatusInternalServerError)
+				return
+			}
+
+			http.SetCookie(w, s.Auth.GetRefreshCookie(tokens.RefreshToken))
+			writeJSONResponse(w, http.StatusOK, tokens)
+		}
+	}
+}
+
+func (s *WebServer) Logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	http.SetCookie(w, s.Auth.GetExpiredRefreshCookie())
+	w.WriteHeader(http.StatusAccepted)
 }

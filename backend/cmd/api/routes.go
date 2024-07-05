@@ -9,12 +9,15 @@ import (
 func (s *WebServer) Routes() http.Handler {
 	// create a router mux
 	mux := chi.NewRouter()
+
 	mux.Use(middleware.Recoverer)
 	mux.Use(s.enableCORS)
 
 	mux.Get("/", s.Home)
 
 	mux.Post("/authenticate", s.Authenticate)
+	mux.Get("/refresh", s.RefreshToken)
+	mux.Get("/logout", s.Logout)
 
 	mux.Get("/movies", s.AllMovies)
 
