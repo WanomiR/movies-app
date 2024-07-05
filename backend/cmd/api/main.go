@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type WebServer struct {
@@ -15,23 +16,37 @@ type WebServer struct {
 	Port   string
 	DSN    string
 	DB     respository.DatabaseRepo
+	Auth   Auth
 }
 
 func main() {
-	// set application config
-	var server WebServer
-
 	// read environment variables
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("error loading .env file")
 	}
+
+	// set application config
+	var server WebServer
 	server.Port = os.Getenv("PORT")
 	server.Domain = os.Getenv("DOMAIN")
+
+	server.Auth = Auth{
+		TokenExpiry:   15 * time.Minute,
+		RefreshExpiry: 24 * time.Hour,
+		CookiePath:    "/",
+		CookieName:    "__Host-refresh_token",
+		CookieDomain:  server.Domain,
+	}
+
 	defaultDsn := os.Getenv("DEFAULT_DSN")
 
 	// read from command line
 	flag.StringVar(&server.DSN, "dsn", defaultDsn, "postgres connection string")
+	flag.StringVar(&server.Auth.Secret, "jwt-secret", "verysecret", "signing secret")
+	flag.StringVar(&server.Auth.Issuer, "jwt-issuer", "example.com", "signing issuer")
+	flag.StringVar(&server.Auth.Audience, "jwt-audience", "example.com", "signing audience")
+	flag.StringVar(&server.Auth.CookieDomain, "cookie-domain", "localhost", "cookie domain")
 	flag.Parse()
 
 	// connect to the database

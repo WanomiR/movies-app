@@ -35,12 +35,14 @@ const Login = () => {
 						name={"email"}
 						autoComplete="email-new"
 						onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+						placeholder={"admin@example.com"}
 					/>
 					<Input
 						title={"Password"}
 						type="password"
 						className={"form-control"}
 						name={"password"}
+						placeholder={"verysecret"}
 						autoComplete="password-new"
 						onChange={(e) => setCredentials({...credentials, password: e.target.value})}
 					/>

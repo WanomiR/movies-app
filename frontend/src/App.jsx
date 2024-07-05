@@ -18,7 +18,7 @@ const App = () => {
 			<div className="col">
 				<h1 className={"mt-3"}>Go Watch a Movie!</h1>
 			</div>
-			<div className="col text-end">
+			<div className="col text-end mt-3">
 				{jwtToken === "" ? <Link to={"/login"}><span className={"badge bg-success"}>Login</span></Link> :
 					<a href={"#!"} onClick={logOut}><span className="badge bg-danger">Logout</span></a>}
 			</div>

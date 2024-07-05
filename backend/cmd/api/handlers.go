@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -30,7 +29,7 @@ func (s *WebServer) Home(w http.ResponseWriter, r *http.Request) {
 func (s *WebServer) AllMovies(w http.ResponseWriter, r *http.Request) {
 	movies, err := s.DB.AllMovies()
 	if err != nil {
-		fmt.Println(err)
+		writeJSONError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -42,3 +41,5 @@ func (s *WebServer) AllMovies(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 }
+
+//func (s *WebServer) Authenticate(w http.ResponseWriter) {}
