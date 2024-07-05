@@ -6,7 +6,7 @@ import apiBaseUrl from "/src/index.jsx";
 const Login = () => {
 
 	const [credentials, setCredentials] = useState({email: "", password: ""});
-	const {setJwtToken, setAlertInfo} = useOutletContext()
+	const {setJwtToken, setAlertInfo, toggleRefresh} = useOutletContext()
 
 	const navigate = useNavigate()
 
@@ -34,6 +34,7 @@ const Login = () => {
 			} else {
 				setJwtToken(data.access_token)
 				setAlertInfo({message: "", className: "d-none"})
+				toggleRefresh(true)
 				navigate("/")
 			}
 

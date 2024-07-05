@@ -1,11 +1,13 @@
 import {Link, Outlet, useNavigate} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import Alert from "./components/Alert";
 import apiBaseUrl from "/src/index.jsx";
 
 const App = () => {
 	const [jwtToken, setJwtToken] = useState("");
 	const [alertInfo, setAlertInfo] = useState({className: "d-none", message: ""});
+
+	const [tickInterval, setTickInterval] = useState();
 
 	const navigate = useNavigate()
 
@@ -21,33 +23,48 @@ const App = () => {
 			console.log("error logging out", error.message)
 		}
 
+		toggleRefresh(false)
 		setJwtToken("")
 		navigate("/login")
 
 	}
 
-	useEffect(() => {
-		const doRefresh = async () => {
-			if (jwtToken === "") {
-				const requestOptions = {
-					method: "GET",
-					credentials: "include",
-				}
-				try {
-					const res = await fetch(apiBaseUrl + `/refresh`, requestOptions)
-					const data = await res.json()
-					if (data.access_token) {
-						setJwtToken(data.access_token)
-					} else {
-						console.log("no access token found", data.message)
-					}
-				} catch (error) {
-					console.log("user is not logged in", error.message)
-				}
-			}
+	const fetchRefresh = async () => {
+		const requestOptions = {
+			method: "GET",
+			credentials: "include",
 		}
-		doRefresh()
-	}, [jwtToken]);
+		try {
+			const res = await fetch(apiBaseUrl + `/refresh`, requestOptions)
+			const data = await res.json()
+			if (data.access_token) {
+				setJwtToken(data.access_token)
+			} else {
+				console.log("no access token found", data.message)
+			}
+		} catch (error) {
+			console.log("user is not logged in", error.message)
+		}
+	}
+
+	const toggleRefresh = useCallback(status => {
+		if (status) {
+			let i = setInterval(() => {
+				fetchRefresh()
+				setTickInterval(i)
+			}, 600000) // 10 minutes
+		} else {
+			clearInterval(tickInterval)
+		}
+	}, [tickInterval]);
+
+
+	useEffect(() => {
+		if (jwtToken === "") {
+			fetchRefresh()
+		}
+	}, [jwtToken, toggleRefresh]);
+
 
 	return (<div className="container">
 		<div className="row">
@@ -81,7 +98,7 @@ const App = () => {
 			<div className="col-md-10">
 				<Alert message={alertInfo.message} className={alertInfo.className}/>
 				<Outlet context={{
-					jwtToken, setJwtToken, setAlertInfo,
+					jwtToken, setJwtToken, setAlertInfo, toggleRefresh
 				}}/>
 			</div>
 		</div>
