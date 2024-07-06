@@ -21,5 +21,11 @@ func (s *WebServer) Routes() http.Handler {
 
 	mux.Get("/movies", s.AllMovies)
 
+	mux.Route("/admin", func(mux chi.Router) {
+		mux.Use(s.requireAuthentication)
+
+		mux.Get("/movies", s.MovieCatalogue)
+	})
+
 	return mux
 }

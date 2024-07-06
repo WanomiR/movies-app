@@ -45,7 +45,7 @@ func (s *WebServer) Authenticate(w http.ResponseWriter, r *http.Request) {
 	// read JSON payload
 	var requestPayload models.UserAuthPayload
 
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Add("Access-Control-Allow-Credentials", "true")
 
 	err := readJSONPayload(w, r, &requestPayload)
 	if err != nil {
@@ -87,7 +87,7 @@ func (s *WebServer) Authenticate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *WebServer) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Add("Access-Control-Allow-Credentials", "true")
 
 	for _, cookie := range r.Cookies() {
 		fmt.Println(cookie.Name, s.Auth.CookieName)
@@ -136,7 +136,17 @@ func (s *WebServer) RefreshToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *WebServer) Logout(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Add("Access-Control-Allow-Credentials", "true")
 	http.SetCookie(w, s.Auth.GetExpiredRefreshCookie())
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func (s *WebServer) MovieCatalogue(w http.ResponseWriter, r *http.Request) {
+	movies, err := s.DB.AllMovies()
+	if err != nil {
+		writeJSONError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, movies)
 }
